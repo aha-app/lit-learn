@@ -1,6 +1,17 @@
 import { LitElement, html, css } from 'lit-element';
 
 export class StockManager extends LitElement {
+ 
+  static get styles() {
+    return css`
+      .all-positions {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-gap: .25em;
+      }
+    `;
+  }
+
   static get properties() {
     return {
       positions: { type: Array },
@@ -10,7 +21,8 @@ export class StockManager extends LitElement {
 
   constructor() {
     super();
-    this.positions = []
+    this.positions = [];
+    this.currentPrice = 50;
   }
   
   generatePositions(stream = false) {
@@ -35,6 +47,11 @@ export class StockManager extends LitElement {
   handleAddPositions() {
     this.positions = [...this.positions, ...this.generatePositions()];
   }
+
+  handleInput(e) {
+    const key = e.target.getAttribute("name");
+    this[key] = e.target.value;
+  }
   
   giveToHedgeFund() {
     for (let i = 0; i < 100; i++) {
@@ -49,33 +66,6 @@ export class StockManager extends LitElement {
     }
   }
   
-  inlinePositions() {
-    return html`
-      ${this.positions.map((position) => html`
-        <div>
-          ${position.symbol} - ${position.shares} shares @ ${position.price} - $${position.total}
-        </div>
-      `)}
-    `
-  }
-  
-  componentPositions() {
-    return html`
-      ${this.positions.map((position) => html`
-        <div>
-          <stock-position
-            .symbol=${position.symbol}
-            .shares=${position.shares}
-            .price=${position.price}
-          ></stock-position>
-        </div>
-      `)}
-    `;
-  }
-  
-  functionalPositions() {
-  }
-  
   render() {
     return html`
       <h1> Robinhood Stock Management Dashboard </h1>
@@ -83,33 +73,52 @@ export class StockManager extends LitElement {
         <div>Positions reported: ${this.positions.length}</div>
         <button @click="${this.handleAddPositions}">Add Positions</button>
         <button @click="${this.giveToHedgeFund}">Give to Hedge Fund</button>
+
+        <br>
+        <br>
+        <label>Current Price:</label>
+        <input @input="${this.handleInput}" value="${this.currentPrice}" type="number" name="currentPrice">
       </div>
 
       <br>
       <br>
 
-      <div>
-        ${this.componentPositions()}
+      <div class="all-positions">
+        ${this.positions.map((position) => html`
+          <stock-position
+            .symbol=${position.symbol}
+            .shares=${position.shares}
+            .avgPurchasePrice=${position.price}
+            .currentPrice=${this.currentPrice}
+          ></stock-position>
+        `)}
       </div>
     `
   }
 }
 
-      // <div>
-      //   ${this.inlinePositions()}
-      // </div>
-
 customElements.define('stock-manager', StockManager);
 
-class StockPosition extends LitElement {
+export class StockPosition extends LitElement {
   static get styles() {
-    return [
-      css`
-      div {
-        font-size: 10;
+    return css`
+      .position-card {
+        border: 1px solid #7b99c1;
+        border-radius: .25em;
+        padding: 1em;
+        width: 350px;
       }
-      .position{
-        animation: pulse-green 2s once;
+      
+      .green {
+        color: green;
+      }
+      
+      .red {
+        color: red;
+      }
+
+      .grey {
+        color: grey
       }
 
       .position {
@@ -130,27 +139,35 @@ class StockPosition extends LitElement {
           box-shadow: 0 0 0 0 rgba(51, 217, 178, 0);
         }
       }
-    `]
+    `;
   }
 
   static get properties() {
     return {
-      symbol: { type: String},
-      price: { type: Number },
+      symbol: { type: String },
       shares: { type: Number },
-    }
+      avgPurchasePrice: { type: Number },
+      currentPrice: { type: Number },
+    };
   }
   
   constructor() {
     super();
-    this.symbol = '';
-    this.price = 0;
-    this.shares = 0;
+    this.symbol = "GME";
+    this.shares = 10;
+    this.avgPurchasePrice = 50;
+    this.currentPrice = 50;
     this.pulseOnUpdate = true;
   }
-  
+
   get total() {
-    return (this.price * this.shares).toFixed(2) 
+    return (this.avgPurchasePrice * this.shares).toFixed(2) 
+  }
+  
+  get positionHealth() {
+    if (this.currentPrice < this.avgPurchasePrice) return "red"
+    if (this.currentPrice > this.avgPurchasePrice) return "green"
+    if (this.currentPrice === this.avgPurchasePrice) return "grey"
   }
   
   updated() {
@@ -165,12 +182,12 @@ class StockPosition extends LitElement {
   
   render() {
     return html`
-      <div pulse-on-update>
-        ${this.symbol} - ${this.shares} shares @ ${this.price} - $${this.total}
+      <div class="position-card" pulse-on-update>
+        ${this.symbol} - ${this.shares} shares @ $${this.avgPurchasePrice} - 
+        <span class="${this.positionHealth}"> $${this.total} </span>
       </div>
     `;
   }
-
 }
 
 customElements.define('stock-position', StockPosition)
