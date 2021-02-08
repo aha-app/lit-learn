@@ -3,6 +3,7 @@ import { LitElement, html } from 'lit-element';
 import "./1-rendering-approach/1-RenderingApproach.js"
 import "./1-rendering-approach/2-MorePractical.js"
 import "./2-minimizing-expressions/1-StockManager.js";
+import "./2-minimizing-expressions/2-EfficientUpdates.js";
 import "./3-other-cool-things/1-FunctionalComponents.js";
 import "./3-other-cool-things/2-DeclarativeBehavior.js";
 import "./3-other-cool-things/3-DependencyInjection.js";
@@ -34,6 +35,8 @@ export class LitLearn extends LitElement {
         return html`<more-practical></more-practical>`
       case "21":
         return html`<stock-manager></stock-manager>`
+      case "22":
+        return html`<efficient-updates></efficient-updates>`
       case "31":
         return html`<functional-components></functional-components>`
       case "32":
