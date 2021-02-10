@@ -64,7 +64,9 @@ export class MorePractical extends LitElement {
       </div>
     `;
     
+    console.log(result.strings)
     console.log(result.values)
+    console.log(result.getTemplateElement());
     console.log(result.getHTML());
     
     return html`
