@@ -36,7 +36,7 @@ class EfficientUpdates extends LitElement {
     this.goingUp = true;
     setInterval(() => {
       this.incrementWidth();
-    }, 20);
+    }, 10);
   }
   
   incrementWidth() {
@@ -77,8 +77,12 @@ class EfficientUpdates extends LitElement {
     return html`
       <main>
         <div>
+          <div>
+            <p>For another example please see: <a href="https://stackblitz.com/edit/i1zam9?devtoolsheight=33&file=my-element.js" target="_blank" rel="noopener noreferrer">only rendering when visible</a></p>
+          </div>
+          
+          <p>Updates are fired every 10 ms. Each time an update occurs, artificially takes 1 to 6 ms to pass to child.</p>
           <label @click="${() => this.lazy = !this.lazy}" for="lazy">Lazy: <input type="checkbox" ?checked=${this.lazy}></label>
-
         </div>
         ${this.tree}
       </main>
@@ -106,6 +110,7 @@ class MorphingTree extends LitElement {
   static get properties() {
     return {
       width: { type: Number },
+      childWidth: {type: Number },
       totalDepth: { type: Number },
       currentDepth: {type: Number }
     }
@@ -115,16 +120,24 @@ class MorphingTree extends LitElement {
     if (this.currentDepth < this.totalDepth) {
       return html`
         <morphing-tree
-          .width=${this.width}
+          .width=${this.childWidth}
           .totalDepth="${this.totalDepth}"
           .currentDepth="${this.currentDepth + 1}"
         ></morphing-tree>
         <morphing-tree
-          .width=${this.width}
+          .width=${this.childWidth}
           .totalDepth="${this.totalDepth}"
           .currentDepth="${this.currentDepth + 1}"
         ></morphing-tree>
       `
+    }
+  }
+  
+  updated(changedProperties) {
+    if (changedProperties.has("width")) {
+      setTimeout(() => {
+        this.childWidth = this.width
+      }, Math.floor((Math.random() * 5) + 1))
     }
   }
 
@@ -146,9 +159,9 @@ class MorphingTree extends LitElement {
 window.customElements.define("morphing-tree", MorphingTree);
 
 class LazyLitElement extends LitElement {
-  async scheduleUpdate() {
+  async performUpdate() {
     await new Promise(res => setTimeout(res));
-    this._validate();
+    super.performUpdate();
   }
 }
 
@@ -171,8 +184,17 @@ class LazyMorphingTree extends LazyLitElement {
   static get properties() {
     return {
       width: { type: Number },
+      childWidth: { type: Number },
       totalDepth: { type: Number },
       currentDepth: {type: Number }
+    }
+  }
+  
+  updated(changedProperties) {
+    if (changedProperties.has("width")) {
+      setTimeout(() => {
+        this.childWidth = this.width
+      }, Math.floor((Math.random() * 25) + 5))
     }
   }
   
@@ -180,12 +202,12 @@ class LazyMorphingTree extends LazyLitElement {
     if (this.currentDepth < this.totalDepth) {
       return html`
         <morphing-tree
-          .width=${this.width}
+          .width=${this.childWidth}
           .totalDepth="${this.totalDepth}"
           .currentDepth="${this.currentDepth + 1}"
         ></morphing-tree>
         <morphing-tree
-          .width=${this.width}
+          .width=${this.childWidth}
           .totalDepth="${this.totalDepth}"
           .currentDepth="${this.currentDepth + 1}"
         ></morphing-tree>
